@@ -94,7 +94,7 @@ All failures return JSON: `{"error": "..."}` with an appropriate status code.
 
 ## License
 
-MIT — Own your analysis. 🎹🦞
+MIT — Own your analysis. ⚫🦞
 
 ---
 
