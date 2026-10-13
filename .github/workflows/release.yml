@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install build-essential
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghostbin-${{ runner.os }}
+          path: target/release/ghostbin${{ runner.os == 'Windows' && '.exe' || '' }}
+          if-no-files-found: error
+
+  release:
+    name: release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ghostbin-*
+          path: dist
+          merge-multiple: false
+
+      - name: Stage binaries
+        run: |
+          mkdir -p release
+          cp dist/ghostbin-Linux/ghostbin release/ghostbin-linux
+          cp dist/ghostbin-macOS/ghostbin release/ghostbin-macos
+          cp dist/ghostbin-Windows/ghostbin.exe release/ghostbin-windows.exe
+          chmod +x release/ghostbin-linux release/ghostbin-macos
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            release/ghostbin-linux
+            release/ghostbin-macos
+            release/ghostbin-windows.exe
+          body: |
+            ## v1.0.1
+
+            - Apache-2.0 license clarity
+            - CI and multi-platform release binaries (Linux, macOS, Windows)
+            - README honesty: WebSocket support is experimental; CFG is first-function only
+            - Funding: GitHub Sponsors and Ko-fi
+            - Repository: https://github.com/Blackshield-Company/ghostbin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
