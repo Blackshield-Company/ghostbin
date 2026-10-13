@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
     let app = ghostbin::build_app(state);
 
     let listener = tokio::net::TcpListener::bind(&bind).await?;
-    info!("👻 GhostBin v1.0.0 listening on {}", listener.local_addr()?);
+    info!("👻 GhostBin v1.0.1 listening on {}", listener.local_addr()?);
     info!("   LLM integration is optional; core disasm/decompile works fully offline.");
 
     axum::serve(listener, app).await?;

@@ -10,7 +10,7 @@ Ghosts in the machine, illuminated by local intelligence. Disassemble, decompile
 - **Disassembly** — Capstone: x86, x86-64, ARM64
 - **Decompilation** — CFG construction (basic blocks, branch/fallthrough/call edges) + pattern-matched C-like pseudo-code
 - **Function discovery** — Symbol tables, with prologue heuristics for stripped x86/ARM64 ELFs
-- **Annotations** — Per-address notes over REST + WebSocket sync
+- **Annotations** — Per-address notes over REST (in-memory). WebSocket sync is experimental (echo-only; the stock UI uses REST)
 - **AI analysis (optional)** — Any local OpenAI-compatible server (llama.cpp, etc.). If no model is running you get a clear 503 and everything else keeps working
 - **Web UI** — Single static page, no build step, no Electron
 
@@ -64,9 +64,9 @@ cargo build --release
 | `/api/binary/:id/function/:addr/decompile` | POST | Pseudo-code |
 | `/api/binary/:id/function/:addr/analyze` | POST | AI analysis (503 if LLM offline) |
 | `/api/annotations/:addr` | GET/POST | List / add annotations |
-| `/api/graph/:id/cfg` | GET | Control flow graph (nodes + edges) |
+| `/api/graph/:id/cfg` | GET | CFG for the **first** discovered function only (nodes + edges; not selectable by address yet) |
 | `/api/llm/status` | GET | LLM reachability and config |
-| `/ws` | WS | Annotation/cursor message sync |
+| `/ws` | WS | Experimental annotation/cursor echo (no multi-client broadcast; UI does not use it yet) |
 
 All failures return JSON: `{"error": "..."}` with an appropriate status code.
 
@@ -92,18 +92,13 @@ All failures return JSON: `{"error": "..."}` with an appropriate status code.
    └─────────┘      └─────────┘       └───────────┘
 ```
 
-## License
+## Support
 
-MIT — Own your analysis. ⚫🦞
+If this project saved you time, you can support development:
 
----
-
-## ☕ Support the Developer
-
-If this project saved you time, solved a problem, or just made your day a little more neon, you can fuel the next one:
-
-[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/synthalorian)
+- [GitHub Sponsors](https://github.com/sponsors/synthalorian)
+- [Ko-fi](https://ko-fi.com/synthalorian)
 
 ## License
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](LICENSE) — Own your analysis. ⚫🦞
