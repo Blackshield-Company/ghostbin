@@ -1,3 +1,5 @@
+![ghostbin](.github/preview.png)
+
 # 👻 GhostBin
 
 AI-assisted reverse engineering. Fully offline. No cloud, no API keys, no telemetry — no data ever leaves your machine.
