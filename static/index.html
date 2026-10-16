@@ -183,6 +183,11 @@
             color: #666;
         }
         .error-text { color: #e07070; }
+        /* Knight A, the Blackshield Company mascot, for empty, loading and error states. */
+        .knight-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 100%; min-height: 140px; color: #666; font-size: 12px; text-align: center; }
+        .knight-state img { width: 96px; height: 84px; image-rendering: pixelated; }
+        .knight-state.small img { width: 64px; height: 56px; }
+        .knight-state.error { color: #e07070; }
         .muted { color: #555; font-size: 12px; padding: 4px 8px; }
     </style>
 </head>
@@ -205,7 +210,7 @@
 
         <div class="main">
             <div class="disasm-view" id="disasmView">
-                <div class="muted">Load a binary and select a function to view disassembly.</div>
+                <div class="knight-state"><img src="/knight/idle" alt=""><span>Load a binary and select a function to view disassembly.</span></div>
             </div>
             <div class="decompile-view">
                 <pre id="decompileOutput">// Select a function and click "Decompile" to see pseudo-code</pre>
@@ -262,6 +267,12 @@
         refreshLlmStatus();
         setInterval(refreshLlmStatus, 15000);
 
+        // Knight A state block: idle (empty), thinking (loading) or error.
+        function knightState(state, message, small) {
+            const cls = 'knight-state' + (small ? ' small' : '') + (state === 'error' ? ' error' : '');
+            return `<div class="${cls}"><img src="/knight/${state}" alt=""><span>${escapeHtml(message)}</span></div>`;
+        }
+
         // --- Binary loading ---
         async function loadBinary() {
             const path = prompt('Enter binary path (on the server):');
@@ -316,12 +327,12 @@
             li.classList.add('active');
 
             const view = document.getElementById('disasmView');
-            view.innerHTML = '<div class="loading">Disassembling...</div>';
+            view.innerHTML = knightState('thinking', 'Disassembling...');
             try {
                 const r = await fetch(`/api/binary/${currentBinaryId}/function/${addr}/disasm`);
                 const insns = await r.json();
                 if (!r.ok) {
-                    view.innerHTML = `<div class="error-text">${escapeHtml(insns.error || 'disassembly failed')}</div>`;
+                    view.innerHTML = knightState('error', insns.error || 'disassembly failed');
                     return;
                 }
                 view.innerHTML = '';
@@ -337,7 +348,7 @@
                     view.appendChild(line);
                 }
             } catch (e) {
-                view.innerHTML = `<div class="error-text">${e}</div>`;
+                view.innerHTML = knightState('error', String(e));
             }
             loadAnnotations();
         }
@@ -368,7 +379,7 @@
                 return;
             }
             const out = document.getElementById('aiOutput');
-            out.innerHTML = '<div class="loading">Analyzing...</div>';
+            out.innerHTML = knightState('thinking', 'Analyzing...', true);
             try {
                 const r = await fetch(
                     `/api/binary/${currentBinaryId}/function/${currentAddr}/analyze`,

@@ -232,3 +232,24 @@ async fn test_ui_is_served() {
     assert!(html.contains("GhostBin"));
     assert!(html.contains("/api/binary/load"));
 }
+
+#[tokio::test]
+async fn test_knight_sprites_are_served() {
+    let app = build_app(test_state());
+    for state in ["idle", "thinking", "error"] {
+        let req = Request::get(format!("/knight/{state}"))
+            .body(Body::empty())
+            .unwrap();
+        let resp = app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK, "{state}");
+        assert_eq!(
+            resp.headers().get("content-type").unwrap(),
+            "image/svg+xml"
+        );
+        let body = to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+        assert!(body.starts_with(b"<svg"), "{state} is not an SVG");
+    }
+    let req = Request::get("/knight/nope").body(Body::empty()).unwrap();
+    let resp = app.oneshot(req).await.unwrap();
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+}
