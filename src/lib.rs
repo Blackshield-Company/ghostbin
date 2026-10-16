@@ -43,6 +43,7 @@ impl AppState {
 pub fn build_app(state: AppState) -> Router {
     Router::new()
         .route("/", get(serve_ui))
+        .route("/knight/:state", get(knight_sprite))
         .route("/api/binary/load", post(load_binary))
         .route("/api/binary/:id", get(binary_info))
         .route("/api/binary/:id/functions", get(list_functions))
@@ -79,6 +80,24 @@ fn err(status: StatusCode, msg: impl std::fmt::Display) -> (StatusCode, Json<Api
 
 async fn serve_ui() -> impl IntoResponse {
     axum::response::Html(include_str!("../static/index.html"))
+}
+
+/// Knight A mascot sprites for the UI's empty, loading and error states.
+async fn knight_sprite(Path(state): Path<String>) -> axum::response::Response {
+    let svg = match state.as_str() {
+        "idle" => include_str!("../static/knight/knight-idle.svg"),
+        "thinking" => include_str!("../static/knight/knight-thinking.svg"),
+        "error" => include_str!("../static/knight/knight-error.svg"),
+        _ => return StatusCode::NOT_FOUND.into_response(),
+    };
+    (
+        [
+            (axum::http::header::CONTENT_TYPE, "image/svg+xml"),
+            (axum::http::header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        svg,
+    )
+        .into_response()
 }
 
 async fn load_binary(
