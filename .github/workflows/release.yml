@@ -71,6 +71,6 @@ jobs:
             - CI and multi-platform release binaries (Linux, macOS, Windows)
             - README honesty: WebSocket support is experimental; CFG is first-function only
             - Funding: GitHub Sponsors and Ko-fi
-            - Repository: https://github.com/synthalorian/ghostbin
+            - Repository: https://github.com/Blackshield-Company/ghostbin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
